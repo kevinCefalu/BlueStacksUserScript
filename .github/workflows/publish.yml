@@ -1,0 +1,46 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Publish to PowerShell Gallery
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module InvokeBuild      -Force -Scope CurrentUser -ErrorAction Stop
+          Install-Module Pester           -Force -Scope CurrentUser -MinimumVersion 5.0 -ErrorAction Stop
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop
+
+      - name: Lint & Test
+        shell: pwsh
+        run: ./build.ps1 -Task Lint, Test
+
+      - name: Stamp version from tag
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}' -replace '^v', ''
+          $psd1    = 'src/BlueStacksUserScript/BlueStacksUserScript.psd1'
+          (Get-Content $psd1 -Raw) `
+            -replace "ModuleVersion\s*=\s*'[^']*'", "ModuleVersion     = '$version'" |
+            Set-Content $psd1
+          Write-Host "Stamped version $version into $psd1"
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1 -Task Build
+
+      - name: Publish
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: ./build.ps1 -Task Publish

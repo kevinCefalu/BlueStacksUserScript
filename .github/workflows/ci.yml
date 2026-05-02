@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test (pwsh ${{ matrix.pwsh }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pwsh: ['7.2', '7.4']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PowerShell ${{ matrix.pwsh }}
+        uses: bjompen/UpdatePWSHAction@v1.0.0
+        with:
+          ReleaseVersion: ${{ matrix.pwsh }}
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module InvokeBuild      -Force -Scope CurrentUser -ErrorAction Stop
+          Install-Module Pester           -Force -Scope CurrentUser -MinimumVersion 5.0 -ErrorAction Stop
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop
+
+      - name: Lint
+        shell: pwsh
+        run: ./build.ps1 -Task Lint
+
+      - name: Test
+        shell: pwsh
+        run: ./build.ps1 -Task Test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-pwsh-${{ matrix.pwsh }}
+          path: output/testResults.xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-pwsh-${{ matrix.pwsh }}
+          path: output/coverage.xml
