@@ -1,6 +1,4 @@
-BeforeAll {
-  Import-Module "$PSScriptRoot/../../src/BlueStacksUserScript/BlueStacksUserScript.psd1" -Force
-}
+Import-Module "$PSScriptRoot/../../src/BlueStacksUserScript/BlueStacksUserScript.psd1" -Force
 
 Describe 'New-BluestacksClickEvents (private)' {
   InModuleScope BlueStacksUserScript {

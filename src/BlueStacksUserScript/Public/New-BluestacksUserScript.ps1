@@ -10,18 +10,18 @@ function New-BluestacksUserScript {
 
     Supported step types:
 
-      Snippet     — embed a pre-recorded snippet from the snippet directory
-      Click       — inline tap: @(X, Y)
-      Swipe       — drag gesture with Start/End coordinates
-      CircleClick — evenly-spaced taps around a circle
-      Wait        — silent pause; no events emitted
+      Snippet     - embed a pre-recorded snippet from the snippet directory
+      Click       - inline tap: @(X, Y)
+      Swipe       - drag gesture with Start/End coordinates
+      CircleClick - evenly-spaced taps around a circle
+      Wait        - silent pause; no events emitted
 
     Common keys accepted by all action steps:
 
-      Repeat         — repeat the action N times           (default 1)
-      RepeatInterval — ms gap between repetitions          (default 20)
-      HoldMs         — tap-hold duration for Click steps   (default 20)
-      DelayAfter     — ms of silence after the step        (default 20)
+      Repeat         - repeat the action N times           (default 1)
+      RepeatInterval - ms gap between repetitions          (default 20)
+      HoldMs         - tap-hold duration for Click steps   (default 20)
+      DelayAfter     - ms of silence after the step        (default 20)
 
   .PARAMETER Sequence
     Array of step hashtables defining the macro.
@@ -58,7 +58,7 @@ function New-BluestacksUserScript {
     [Parameter(Mandatory)]
     [object[]] $Sequence,
 
-    [string] $SnippetDir  = (Get-BluestacksSnippetDirectory),
+    [string] $SnippetDir = (Get-BluestacksSnippetDirectory),
     [int]    $StartOffset = 100,
     [switch] $Preview
   )
@@ -68,12 +68,12 @@ function New-BluestacksUserScript {
   [long] $cursor = $StartOffset
 
   foreach ($step in $Sequence) {
-    $repeat         = if ($step.ContainsKey('Repeat'))         { [int]$step.Repeat }         else { 1 }
-    $repeatInterval = if ($step.ContainsKey('RepeatInterval')) { [int]$step.RepeatInterval } else { 20 }
-    $delayAfter     = if ($step.ContainsKey('DelayAfter'))     { [int]$step.DelayAfter }     else { 20 }
-    $holdMs         = if ($step.ContainsKey('HoldMs'))         { [int]$step.HoldMs }         else { 20 }
+    $repeat = $step.ContainsKey('Repeat') ? [int]$step.Repeat : 1
+    $repeatInterval = $step.ContainsKey('RepeatInterval') ? [int]$step.RepeatInterval : 20
+    $delayAfter = $step.ContainsKey('DelayAfter') ? [int]$step.DelayAfter : 20
+    $holdMs = $step.ContainsKey('HoldMs') ? [int]$step.HoldMs : 20
 
-    # ── Wait ──────────────────────────────────────────────────────────────────
+    # -- Wait ------------------------------------------------------------------------
     if ($step.ContainsKey('Wait')) {
       $waitMs = [long]$step.Wait
       if ($Preview) {
@@ -83,9 +83,9 @@ function New-BluestacksUserScript {
       continue
     }
 
-    # ── Snippet ───────────────────────────────────────────────────────────────
+    # -- Snippet ---------------------------------------------------------------------
     if ($step.ContainsKey('Snippet')) {
-      $name     = [string]$step.Snippet
+      $name = [string]$step.Snippet
       $duration = Get-BluestacksSnippetDuration -Name $name -SnippetDir $resolvedSnippetDir
 
       if ($Preview) {
@@ -94,16 +94,18 @@ function New-BluestacksUserScript {
       }
 
       for ($i = 0; $i -lt $repeat; $i++) {
-        $events.AddRange(@(Copy-BluestacksSnippetAt -Name $name -BaseTimestamp $cursor -SnippetDir $resolvedSnippetDir))
+        $events.AddRange([PSCustomObject[]](Copy-BluestacksSnippetAt -Name $name -BaseTimestamp $cursor -SnippetDir $resolvedSnippetDir))
         $cursor += $duration
-        if ($i -lt ($repeat - 1)) { $cursor += $repeatInterval }
+        if ($i -lt ($repeat - 1)) {
+          $cursor += $repeatInterval
+        }
       }
 
       $cursor += $delayAfter
       continue
     }
 
-    # ── Click ─────────────────────────────────────────────────────────────────
+    # -- Click -----------------------------------------------------------------------
     if ($step.ContainsKey('Click')) {
       $x = [double]$step.Click[0]
       $y = [double]$step.Click[1]
@@ -114,34 +116,30 @@ function New-BluestacksUserScript {
       }
 
       for ($i = 0; $i -lt $repeat; $i++) {
-        $events.AddRange(@(New-BluestacksClickEvents -X $x -Y $y -BaseTimestamp $cursor -HoldMs $holdMs))
+        $events.AddRange([PSCustomObject[]](New-BluestacksClickEvents -X $x -Y $y -BaseTimestamp $cursor -HoldMs $holdMs))
         $cursor += $holdMs
-        if ($i -lt ($repeat - 1)) { $cursor += $repeatInterval }
+        if ($i -lt ($repeat - 1)) {
+          $cursor += $repeatInterval
+        }
       }
 
       $cursor += $delayAfter
       continue
     }
 
-    # ── Swipe ─────────────────────────────────────────────────────────────────
+    # -- Swipe -----------------------------------------------------------------------
     if ($step.ContainsKey('Swipe')) {
       $swipe = $step.Swipe
 
-      if ($swipe.ContainsKey('Start')) {
-        $startX = [double]$swipe.Start[0]; $startY = [double]$swipe.Start[1]
-      } else {
-        $startX = [double]$swipe.StartX;   $startY = [double]$swipe.StartY
-      }
+      $startX = $swipe.ContainsKey('Start') ? [double]$swipe.Start[0] : [double]$swipe.StartX
+      $startY = $swipe.ContainsKey('Start') ? [double]$swipe.Start[1] : [double]$swipe.StartY
 
-      if ($swipe.ContainsKey('End')) {
-        $endX = [double]$swipe.End[0]; $endY = [double]$swipe.End[1]
-      } else {
-        $endX = [double]$swipe.EndX;   $endY = [double]$swipe.EndY
-      }
+      $endX = $swipe.ContainsKey('End') ? [double]$swipe.End[0] : [double]$swipe.EndX
+      $endY = $swipe.ContainsKey('End') ? [double]$swipe.End[1] : [double]$swipe.EndY
 
-      $moveCount      = if ($swipe.ContainsKey('MoveCount'))      { [int]$swipe.MoveCount }      else { 23 }
-      $moveIntervalMs = if ($swipe.ContainsKey('MoveIntervalMs')) { [int]$swipe.MoveIntervalMs } else { 5 }
-      $duration       = ($moveCount + 1) * $moveIntervalMs
+      $moveCount = $swipe.ContainsKey('MoveCount') ? [int]$swipe.MoveCount : 23
+      $moveIntervalMs = $swipe.ContainsKey('MoveIntervalMs') ? [int]$swipe.MoveIntervalMs : 5
+      $duration = ($moveCount + 1) * $moveIntervalMs
 
       if ($Preview) {
         Write-Host ('  [cursor {0,9} ms]  SWIPE  ({1},{2})->({3},{4})  x{5}  (moves {6}, every {7} ms, +{8} ms interval, +{9} ms after)' -f
@@ -149,25 +147,27 @@ function New-BluestacksUserScript {
       }
 
       for ($i = 0; $i -lt $repeat; $i++) {
-        $events.AddRange(@(New-BluestacksSwipeEvents -StartX $startX -StartY $startY -EndX $endX -EndY $endY `
-          -BaseTimestamp $cursor -MoveCount $moveCount -MoveIntervalMs $moveIntervalMs))
+        $events.AddRange([PSCustomObject[]](New-BluestacksSwipeEvents -StartX $startX -StartY $startY -EndX $endX -EndY $endY `
+              -BaseTimestamp $cursor -MoveCount $moveCount -MoveIntervalMs $moveIntervalMs))
         $cursor += $duration
-        if ($i -lt ($repeat - 1)) { $cursor += $repeatInterval }
+        if ($i -lt ($repeat - 1)) {
+          $cursor += $repeatInterval
+        }
       }
 
       $cursor += $delayAfter
       continue
     }
 
-    # ── CircleClick ───────────────────────────────────────────────────────────
+    # -- CircleClick -------------------------------------------------------------------
     if ($step.ContainsKey('CircleClick')) {
-      $circle      = $step.CircleClick
-      $centerX     = [double]$circle.CenterX
-      $centerY     = [double]$circle.CenterY
-      $radius      = [double]$circle.Radius
-      $clickCount  = [int]$circle.ClickCount
-      $intervalMs  = if ($circle.ContainsKey('IntervalMs')) { [int]$circle.IntervalMs } else { $repeatInterval }
-      $duration    = ($holdMs * $clickCount) + ($intervalMs * ($clickCount - 1))
+      $circle = $step.CircleClick
+      $centerX = [double]$circle.CenterX
+      $centerY = [double]$circle.CenterY
+      $radius = [double]$circle.Radius
+      $clickCount = [int]$circle.ClickCount
+      $intervalMs = $circle.ContainsKey('IntervalMs') ? [int]$circle.IntervalMs : $repeatInterval
+      $duration = ($holdMs * $clickCount) + ($intervalMs * ($clickCount - 1))
 
       if ($Preview) {
         Write-Host ('  [cursor {0,9} ms]  CIRCLECLICK  center=({1},{2}) radius={3} clicks={4}  x{5}  (hold {6} ms, +{7} ms point interval, +{8} ms repeat interval, +{9} ms after)' -f
@@ -175,10 +175,12 @@ function New-BluestacksUserScript {
       }
 
       for ($i = 0; $i -lt $repeat; $i++) {
-        $events.AddRange(@(New-BluestacksCircleClickEvents -CenterX $centerX -CenterY $centerY -Radius $radius `
-          -ClickCount $clickCount -BaseTimestamp $cursor -HoldMs $holdMs -IntervalMs $intervalMs))
+        $events.AddRange([PSCustomObject[]](New-BluestacksCircleClickEvents -CenterX $centerX -CenterY $centerY -Radius $radius `
+              -ClickCount $clickCount -BaseTimestamp $cursor -HoldMs $holdMs -IntervalMs $intervalMs))
         $cursor += $duration
-        if ($i -lt ($repeat - 1)) { $cursor += $repeatInterval }
+        if ($i -lt ($repeat - 1)) {
+          $cursor += $repeatInterval
+        }
       }
 
       $cursor += $delayAfter
@@ -188,17 +190,17 @@ function New-BluestacksUserScript {
     Write-Warning "Step has no recognised action key (Snippet / Click / Swipe / CircleClick / Wait). Keys found: $($step.Keys -join ', ')"
   }
 
-  $durationMs  = $cursor - $StartOffset
-  $minutes     = [math]::Floor($durationMs / 60000)
-  $seconds     = [math]::Round(($durationMs % 60000) / 1000, 1)
+  $durationMs = $cursor - $StartOffset
+  $minutes = [math]::Floor($durationMs / 60000)
+  $seconds = [math]::Round(($durationMs % 60000) / 1000, 1)
 
   return [PSCustomObject]@{
-    Events           = $events.ToArray()
-    EventCount       = $events.Count
-    StartOffset      = $StartOffset
-    FinalCursor      = $cursor
-    DurationMs       = $durationMs
-    DurationLabel    = '{0}m {1}s' -f $minutes, $seconds
+    Events = $events.ToArray()
+    EventCount = $events.Count
+    StartOffset = $StartOffset
+    FinalCursor = $cursor
+    DurationMs = $durationMs
+    DurationLabel = '{0}m {1}s' -f $minutes, $seconds
     SnippetDirectory = $resolvedSnippetDir
   }
 }

@@ -18,10 +18,14 @@
 .EXAMPLE
   ./build.ps1 -Task Lint, Test
 #>
+
 #Requires -Modules @{ ModuleName = 'InvokeBuild'; ModuleVersion = '5.0' }
+#Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.0' }
+#Requires -Modules @{ ModuleName = 'PSScriptAnalyzer'; ModuleVersion = '1.25' }
 
 param(
+  [Parameter()]
   [string[]] $Task = 'Default'
-)
+);
 
-Invoke-Build -Task $Task -File "$PSScriptRoot/.build.ps1"
+Invoke-Build -Task $Task -File "$PSScriptRoot/.build.ps1";

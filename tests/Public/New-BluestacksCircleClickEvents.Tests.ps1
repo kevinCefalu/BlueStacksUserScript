@@ -34,8 +34,8 @@ Describe 'New-BluestacksCircleClickEvents' {
   It 'first click is at angle 0 (rightmost point of circle)' {
     $result = New-BluestacksCircleClickEvents -CenterX 50 -CenterY 50 -Radius 10 -ClickCount 1 -BaseTimestamp 0
     # cos(0) = 1, sin(0) = 0 -> X = 60, Y = 50
-    $result[0].X | Should -BeApproximately 60 -Because 'cos(0°) = 1'
-    $result[0].Y | Should -BeApproximately 50 -Because 'sin(0°) = 0'
+    [math]::Abs($result[0].X - 60) | Should -BeLessOrEqual 0.0001 -Because 'cos(0) = 1'
+    [math]::Abs($result[0].Y - 50) | Should -BeLessOrEqual 0.0001 -Because 'sin(0) = 0'
   }
 
   It 'throws when ClickCount is 0' {

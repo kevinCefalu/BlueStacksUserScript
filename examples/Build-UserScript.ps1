@@ -43,7 +43,7 @@ param(
 Set-StrictMode -Version 'Latest';
 $ErrorActionPreference = 'Stop';
 
-Import-Module ($PSScriptRoot | Join-Path -ChildPath 'src\BlueStacksUserScript\BlueStacksUserScript.psd1') -Force;
+Import-Module ($PSScriptRoot | Join-Path -ChildPath '..\src\BlueStacksUserScript\BlueStacksUserScript.psd1') -Force;
 
 $AdGemBtn = @(26, 40);
 $ForFloatingGem = @{

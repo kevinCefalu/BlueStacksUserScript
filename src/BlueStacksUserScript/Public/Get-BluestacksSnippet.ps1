@@ -20,7 +20,7 @@ function Get-BluestacksSnippet {
     Defaults to the module-owned 'snippets' sub-folder.
 
   .OUTPUTS
-    PSCustomObject[]  — each object has Delta, EventType, Timestamp, X, Y.
+    PSCustomObject[]  - each object has Delta, EventType, Timestamp, X, Y.
 
   .EXAMPLE
     Get-BluestacksSnippet -Name 'collect-gem'

@@ -31,7 +31,7 @@ function Export-BluestacksUserScript {
     display purposes but can be combined with it.
 
   .OUTPUTS
-    PSCustomObject  — the same build result returned by New-BluestacksUserScript.
+    PSCustomObject  - the same build result returned by New-BluestacksUserScript.
 
   .EXAMPLE
     Export-BluestacksUserScript -Sequence $sequence -OutputFile '.\macro.json'
@@ -72,7 +72,7 @@ function Export-BluestacksUserScript {
   if ($PSCmdlet.ShouldProcess($OutputFile, 'Write BlueStacks user script JSON')) {
     $payload = [PSCustomObject]@{ Events = $build.Events } | ConvertTo-Json -Depth 5
     Set-Content -Path $OutputFile -Value $payload -Encoding UTF8
-    Write-Host ("Wrote {0} events to '{1}'  (duration: {2})" -f $build.EventCount, $OutputFile, $build.DurationLabel)
+    Write-Verbose ("Wrote {0} events to '{1}'  (duration: {2})" -f $build.EventCount, $OutputFile, $build.DurationLabel)
   }
 
   return $build

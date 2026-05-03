@@ -1,6 +1,6 @@
-BeforeAll {
-  Import-Module "$PSScriptRoot/../../src/BlueStacksUserScript/BlueStacksUserScript.psd1" -Force
+Import-Module "$PSScriptRoot/../../src/BlueStacksUserScript/BlueStacksUserScript.psd1" -Force
 
+BeforeAll {
   $script:snippetDir = Join-Path $TestDrive 'snippets'
   New-Item -ItemType Directory -Path $script:snippetDir | Out-Null
 

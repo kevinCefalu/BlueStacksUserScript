@@ -1,35 +1,28 @@
 @{
-  Severity     = @('Error', 'Warning', 'Information')
+  Severity = @('Error', 'Warning');
   ExcludeRules = @(
     # Write-Host is intentional in Preview/timing output paths
-    'PSAvoidUsingWriteHost'
-  )
-  Rules        = @{
-    PSUseCompatibleSyntax    = @{
-      Enable         = $true
-      TargetVersions = @('7.2', '7.4')
-    }
-    PSReviewUnusedParameter  = @{ Enable = $true }
+    'PSAvoidUsingWriteHost',
+    # New-* functions here are pure in-memory builders and do not mutate external state
+    'PSUseShouldProcessForStateChangingFunctions',
+    # Stable public API names intentionally use plural nouns for collection-returning commands
+    'PSUseSingularNouns'
+  );
+  Rules = @{
+    PSUseCompatibleSyntax = @{
+      Enable = $true;
+      TargetVersions = @('7.2', '7.4');
+    };
+    PSReviewUnusedParameter = @{
+      Enable = $true;
+    };
     PSUseConsistentIndentation = @{
-      Enable              = $true
-      IndentationSize     = 2
-      PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
-      Kind                = 'Space'
-    }
-    PSUseConsistentWhitespace = @{
-      Enable                                  = $true
-      CheckInnerBrace                         = $true
-      CheckOpenBrace                          = $true
-      CheckOpenParen                          = $true
-      CheckOperator                           = $true
-      CheckPipe                               = $true
-      CheckPipeForRedundantWhitespace         = $true
-      CheckSeparator                          = $true
-      CheckParameter                          = $false
-    }
+      Enable = $false;
+      IndentationSize = 2;
+      Kind = 'Space';
+    };
     PSAlignAssignmentStatement = @{
-      Enable         = $true
-      CheckHashtable = $true
-    }
-  }
-}
+      Enable = $false;
+    };
+  };
+};

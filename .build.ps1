@@ -3,10 +3,10 @@
   Run with: ./build.ps1  (or  Invoke-Build in this directory)
 #>
 
-$ModuleName   = 'BlueStacksUserScript'
-$SrcRoot      = "$BuildRoot/src/$ModuleName"
-$OutputRoot   = "$BuildRoot/output/$ModuleName"
-$TestsRoot    = "$BuildRoot/tests"
+$ModuleName = 'BlueStacksUserScript'
+$SrcRoot = "$BuildRoot/src/$ModuleName"
+$OutputRoot = "$BuildRoot/output/$ModuleName"
+$TestsRoot = "$BuildRoot/tests"
 $ManifestPath = "$SrcRoot/$ModuleName.psd1"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ task Clean {
 # ── Lint ──────────────────────────────────────────────────────────────────────
 task Lint {
   $settings = "$BuildRoot/.PSScriptAnalyzerSettings.psd1"
-  $results  = Invoke-ScriptAnalyzer -Path $SrcRoot -Recurse -Settings $settings
+  $results = Invoke-ScriptAnalyzer -Path $SrcRoot -Recurse -Settings $settings
 
   if ($results) {
     $results | Format-Table -AutoSize
@@ -32,22 +32,37 @@ task Lint {
 # ── Test ──────────────────────────────────────────────────────────────────────
 task Test {
   $config = New-PesterConfiguration
-  $config.Run.Path              = $TestsRoot
-  $config.Output.Verbosity      = 'Normal'
-  $config.CodeCoverage.Enabled  = $true
-  $config.CodeCoverage.Path     = "$SrcRoot/**/*.ps1"
-  $config.CodeCoverage.OutputPath          = "$BuildRoot/output/coverage.xml"
-  $config.CodeCoverage.OutputFormat        = 'JaCoCo'
-  $config.TestResult.Enabled               = $true
-  $config.TestResult.OutputPath            = "$BuildRoot/output/testResults.xml"
-  $config.TestResult.OutputFormat          = 'NUnitXml'
+  $config.Run.Path = $TestsRoot
+  $config.Output.Verbosity = 'Normal'
+  $config.Run.PassThru = $true
+  $config.CodeCoverage.Enabled = $true
+  $config.CodeCoverage.Path = "$SrcRoot/**/*.ps1"
+  $config.CodeCoverage.OutputPath = "$BuildRoot/output/coverage.xml"
+  $config.CodeCoverage.OutputFormat = 'JaCoCo'
+  $config.TestResult.Enabled = $true
+  $config.TestResult.OutputPath = "$BuildRoot/output/testResults.xml"
+  $config.TestResult.OutputFormat = 'NUnitXml'
   $config.CodeCoverage.CoveragePercentTarget = 80
 
   $result = Invoke-Pester -Configuration $config
 
-  if ($result.FailedCount -gt 0) {
-    throw "$($result.FailedCount) Pester test(s) failed."
+  if ($null -eq $result) {
+    throw 'Pester did not return a test result object. Failing Test task to avoid false positives.'
   }
+
+  $failedCount = ($result.PSObject.Properties.Name -contains 'FailedCount') ? [int]$result.FailedCount : 0
+  $failedBlocksCount = ($result.PSObject.Properties.Name -contains 'FailedBlocksCount') ? [int]$result.FailedBlocksCount : 0
+  $totalCount = ($result.PSObject.Properties.Name -contains 'TotalCount') ? [int]$result.TotalCount : -1
+  $status = ($result.PSObject.Properties.Name -contains 'Result') ? [string]$result.Result : 'Unknown'
+
+  if ($totalCount -eq 0) {
+    throw 'Pester discovered zero tests. Failing Test task to avoid false positives.'
+  }
+
+  if ($failedCount -gt 0 -or $failedBlocksCount -gt 0 -or $status -ne 'Passed') {
+    throw "Pester run failed. Status=$status; FailedCount=$failedCount; FailedBlocksCount=$failedBlocksCount; TotalCount=$totalCount"
+  }
+
   Write-Build Green "All $($result.PassedCount) tests passed."
 }
 

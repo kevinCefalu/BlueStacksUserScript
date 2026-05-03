@@ -11,19 +11,19 @@ function New-BluestacksSwipeEvents {
       - MoveCount evenly-spaced MouseMove events along the path
       - One MouseUp at EndX/EndY
 
-    Coordinates are expressed as percentages of the screen dimensions (0–100).
+    Coordinates are expressed as percentages of the screen dimensions (0-100).
 
   .PARAMETER StartX
-    Horizontal start coordinate (0–100).
+    Horizontal start coordinate (0-100).
 
   .PARAMETER StartY
-    Vertical start coordinate (0–100).
+    Vertical start coordinate (0-100).
 
   .PARAMETER EndX
-    Horizontal end coordinate (0–100).
+    Horizontal end coordinate (0-100).
 
   .PARAMETER EndY
-    Vertical end coordinate (0–100).
+    Vertical end coordinate (0-100).
 
   .PARAMETER BaseTimestamp
     Millisecond timestamp at which the gesture begins.
@@ -63,7 +63,7 @@ function New-BluestacksSwipeEvents {
     [Parameter(Mandatory)]
     [long] $BaseTimestamp,
 
-    [int] $MoveCount      = 23,
+    [int] $MoveCount = 23,
     [int] $MoveIntervalMs = 5
   )
 
@@ -81,21 +81,21 @@ function New-BluestacksSwipeEvents {
   for ($i = 1; $i -le $MoveCount; $i++) {
     $progress = $i / ($MoveCount + 1)
     $events.Add([PSCustomObject]@{
-      Delta     = 0
-      EventType = 'MouseMove'
-      Timestamp = $BaseTimestamp + ($i * $MoveIntervalMs)
-      X         = $StartX + (($EndX - $StartX) * $progress)
-      Y         = $StartY + (($EndY - $StartY) * $progress)
-    })
+        Delta = 0
+        EventType = 'MouseMove'
+        Timestamp = $BaseTimestamp + ($i * $MoveIntervalMs)
+        X = $StartX + (($EndX - $StartX) * $progress)
+        Y = $StartY + (($EndY - $StartY) * $progress)
+      })
   }
 
   $events.Add([PSCustomObject]@{
-    Delta     = 0
-    EventType = 'MouseUp'
-    Timestamp = $BaseTimestamp + (($MoveCount + 1) * $MoveIntervalMs)
-    X         = $EndX
-    Y         = $EndY
-  })
+      Delta = 0
+      EventType = 'MouseUp'
+      Timestamp = $BaseTimestamp + (($MoveCount + 1) * $MoveIntervalMs)
+      X = $EndX
+      Y = $EndY
+    })
 
   return $events.ToArray()
 }

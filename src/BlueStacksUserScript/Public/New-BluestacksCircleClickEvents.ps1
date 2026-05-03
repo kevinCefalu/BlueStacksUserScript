@@ -9,10 +9,10 @@ function New-BluestacksCircleClickEvents {
     screen dimensions) and emits a MouseDown / MouseUp pair at each position.
 
   .PARAMETER CenterX
-    Horizontal centre of the circle (0–100).  Defaults to 50.
+    Horizontal centre of the circle (0-100).  Defaults to 50.
 
   .PARAMETER CenterY
-    Vertical centre of the circle (0–100).  Defaults to 25.5.
+    Vertical centre of the circle (0-100).  Defaults to 25.5.
 
   .PARAMETER Radius
     Circle radius as a percentage of screen width.  Must be greater than 0.
