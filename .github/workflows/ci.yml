@@ -18,11 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PowerShell ${{ matrix.pwsh }}
-        uses: bjompen/UpdatePWSHAction@v1.0.0
-        with:
-          ReleaseVersion: ${{ matrix.pwsh }}
-
       - name: Install build dependencies
         shell: pwsh
         run: |
