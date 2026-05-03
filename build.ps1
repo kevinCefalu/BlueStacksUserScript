@@ -25,7 +25,12 @@
 
 param(
   [Parameter()]
-  [string[]] $Task = 'Default'
+  [string[]] $Task = 'Default',
+
+  [Parameter()]
+  [string] $Version
 );
 
-Invoke-Build -Task $Task -File "$PSScriptRoot/.build.ps1";
+$buildArgs = @{ Task = $Task; File = "$PSScriptRoot/.build.ps1" };
+if ($Version) { $buildArgs['Version'] = $Version };
+Invoke-Build @buildArgs;

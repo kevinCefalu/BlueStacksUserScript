@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   publish:
     name: Publish to PowerShell Gallery
@@ -16,10 +19,10 @@ jobs:
       - name: Install build dependencies
         shell: pwsh
         run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module InvokeBuild      -Force -Scope CurrentUser -ErrorAction Stop
-          Install-Module Pester           -Force -Scope CurrentUser -MinimumVersion 5.0 -ErrorAction Stop
-          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop
+          Set-PSRepository PSGallery -InstallationPolicy Trusted;
+          Install-Module InvokeBuild -Force -Scope CurrentUser -ErrorAction Stop;
+          Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0 -ErrorAction Stop;
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop;
 
       - name: Lint & Test
         shell: pwsh
@@ -28,12 +31,8 @@ jobs:
       - name: Stamp version from tag
         shell: pwsh
         run: |
-          $version = '${{ github.ref_name }}' -replace '^v', ''
-          $psd1    = 'src/BlueStacksUserScript/BlueStacksUserScript.psd1'
-          (Get-Content $psd1 -Raw) `
-            -replace "ModuleVersion\s*=\s*'[^']*'", "ModuleVersion     = '$version'" |
-            Set-Content $psd1
-          Write-Host "Stamped version $version into $psd1"
+          $version = '${{ github.ref_name }}' -replace '^v', '';
+          ./build.ps1 -Task StampVersion -Version $version;
 
       - name: Build
         shell: pwsh

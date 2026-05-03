@@ -3,11 +3,25 @@
   Run with: ./build.ps1  (or  Invoke-Build in this directory)
 #>
 
+param(
+  [string] $Version
+)
+
 $ModuleName = 'BlueStacksUserScript'
 $SrcRoot = "$BuildRoot/src/$ModuleName"
 $OutputRoot = "$BuildRoot/output/$ModuleName"
 $TestsRoot = "$BuildRoot/tests"
 $ManifestPath = "$SrcRoot/$ModuleName.psd1"
+
+# ── Stamp Version ────────────────────────────────────────────────────────────
+task StampVersion {
+  if ([string]::IsNullOrWhiteSpace($Version)) {
+    throw 'Version parameter is required for StampVersion task.'
+  }
+  (Get-Content $ManifestPath -Raw) -replace "ModuleVersion\s*=\s*'[^']*'", "ModuleVersion = '$Version'" |
+    Set-Content $ManifestPath
+  Write-Build Green "Stamped version $Version into $ManifestPath"
+}
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 task Clean {
